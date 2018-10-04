@@ -1,0 +1,224 @@
+---
+title: "Homework1"
+author: "高祺"
+date: "2018年9月23日"
+output: 
+  html_document:
+    number_sections: TRUE
+    toc: TRUE
+    toc_float: TRUE
+    code_folding: show
+    fig_width: 7
+    fig_height: 4.5
+    theme: united
+    highlight: tango
+---
+
+```{r setup, include=FALSE}
+knitr::opts_knit$set(progress = FALSE, verbose = FALSE)
+```
+
+# 数据可视化案例
+***
+<font size=4 face="微软雅黑">
+
+&emsp;&emsp;这个案例来自培训行业分析报告。本图包含了多张数据可视化图。图片以深色为底色，给人以厚重感，统计图表的突出部分均使用亮色，对比明显，具有较好的识别。
+
+</font>
+<div align=center>
+![](E:\graduate\人大课程\数据可视化\homework1\pic1.jpg)
+</div>
+
+<font size=4 face="微软雅黑">
+
+&emsp;&emsp;首先，展示了《培训行业2015》一书的销售情况，数据类型是整型定量变量，可视化制图使用的是数据地图的方式，可以直观看出不同城市的报告销售情况。可以看出，销售密度较大的几个点集中在北京、上海、广东、吉林、四川等地，热门区域集中在中国东部，西部地区尤其是西北部地区较为稀疏。从右边的流程图可以看出，4小时售出1000本，2天售出2000本等信息。从这张图中可以较好对比地域之间的总体差异。
+
+&emsp;&emsp;第二幅图表现了培训行业的渗透率，数据类型是百分比数据，即定量变量，在这里使用的是饼图来表现各地占比。左面的饼图通过比例的形式表现了北上广深、省会城市、地级市及以下的地域不同的渗透率，北上广深超过全国一半的教育渗透，比较突出。右面的地图从东西南北四个方位标注出了具有较大提升空间的地域，比较方便直观。
+
+&emsp;&emsp;第三幅图里数据类型是百分比数据，即定量变量，这里使用条形图的方式展现了前十个省市的教育占比，颜色选用了鲜艳的蓝色。根据图表，较为突出的城市是北京，领先第二名许多，且从第四名之后，所有省市的教育占比均小于5%。在这里还可以增加一个饼图来展示各地区的教育占比，能够更加直观地看出不同城市的占比。使用条形图也是适当的，因为北京的优势过于明显，在条形图中也可以直观体现。条形图左侧的是表明了标签的数据地图，将教育行业较为发达的地区标出，了解其地理距离方位。
+
+&emsp;&emsp;总体来说，这是一个设计感和功能较为完整的可视化图像，数据的处理直观明确，配色与表格间距等符合图表设计规则。
+
+
+ 
+
+# 单变量数据绘制图形
+***
+<font size=4 face="微软雅黑">
+
+## 变量选取与数据预处理
+
+&emsp;&emsp;选取第一个定性变量：**属相ba001**，该问题对应的答案是12个属相，分别为鼠、牛、虎、兔、龙、蛇、马、羊、猴、鸡、狗和猪。共有12个分类
+
+
+&emsp;&emsp;第二个定性变量我们选择**居住地变量bb006**该变量对应的问题是：16岁以前，您主要住在农村还是城镇。这里，选项(1)是Village 农村，选项(2)是City/Town 城镇。共有2个分类
+
+
+&emsp;&emsp;定量变量我们选择**出生年份ba002_1**，这个问题的答案取值范围为1900至2011，经过初步分析我们可以知道受访者的出生年份在1910至1989年之间。 
+
+
+&emsp;&emsp;接下来进行数据预处理，依次载入数据并删除具有缺失值的数据，生成新的数据框。
+
+```{r prepare}
+library(readstata13)              #可以读取stata13.stata14格式文件
+library(ggplot2)
+
+dt0 <- read.dta13("E:\\demographic_background.dta")  #载入数据
+dt1 <- dt0[,c(4,5,21)]  # 提取三个待研究的变量
+dim(dt1)
+head(dt1)
+
+dt1 <- dt1[complete.cases(dt1),]  # 删除缺失值
+dim(dt1)
+```
+
+## 定性变量
+
+### 频数条形统计图
+&emsp;&emsp;使用定性变量：属相来分别使用基本绘图函数和ggplot2函数包绘制频数条形统计图，对比绘制过程，R语言基本绘图函数需要的步骤较多，需要首先利用cut函数和table函数计算数据的频数分布，再使用barplot函数作图，且横坐标的变量名称需要进行相应的修改，seq函数需要设置区间划分范围，在私用cut函数辅助计算数据区间内的频数分布，最后用table函数得到每个数据在数据集中出现的次数，步骤较为繁琐。而使用ggplot函数则方便许多，且不需要修改横坐标变量名称。
+```{r}
+barplot(table(cut(as.integer(dt1$ba001),seq(0,12,by = 1))),col = "yellow", main = "属相频数条形图", ylim = c(0,2000))
+
+ggplot(dt1, aes(x = ba001))+ geom_bar(fill = "yellow", color = "black")
+
+```
+
+```{r}
+barplot(table(cut(as.integer(dt1$bb006),seq(0,2,by = 1))),col = "yellow", main = "居住地频数条形图", ylim = c(0,17000), xaxt = "n")
+axis(1,labels = c("city", "village"),at=1:2, 1)
+
+ggplot(dt1, aes(x = bb006))+ geom_bar(fill = "yellow", color = "black", alpha = 0.3)
+
+```
+
+
+### 堆积条形图
+&emsp;&emsp;这里，我们使用ggplot函数绘制频数条形图，选取ba001属相和bb006居住地两个分类变量，分别绘制堆积条形图和标准化的堆积条形图。
+
+```{r}
+ggplot(dt1,aes(x=ba001, fill = bb006))+geom_bar()
+
+ggplot(dt1,aes(x=ba001, fill = bb006))+geom_bar(position = "fill")
+```
+
+### 簇状条形图
+
+&emsp;&emsp;这里，我们使用ggplot函数绘制频数条形图，选取ba001属相和bb006居住地两个分类变量，分别绘制簇状条形图和柱子分开的簇状条形图。
+
+```{r}
+ggplot(dt1, aes(x=ba001,fill = bb006))+geom_bar(position = "dodge")
+
+ggplot(dt1, aes(x=ba001,fill = bb006))+geom_bar(position = position_dodge(0.9), width = 0.7)
+```
+
+### 箱线图
+&emsp;&emsp;使用出生年份ba002_1变量绘制箱线图，两组图形较为相似，ggplot函数可添加更多参数，根据需要来绘制多种图形
+
+```{r}
+boxplot(dt1$ba002_1, main = "出生年份箱线图", xlab = "year of born", ylab = "year", col = "lightblue")
+
+ggplot(dt1, aes(x="ba002_1",y=ba002_1))+geom_boxplot(fill="lightblue")
+
+```
+
+
+### 饼图
+&emsp;&emsp;根据属相变量和居住地变量分别绘制饼图，相比之下二者显示均比较美观，ggplot在编程语句中较为方便。
+
+```{r}
+library("stringr")
+pic1 <- round(table(dt1$ba001)/sum(table(dt1$ba001))*100)
+lab1 <- paste(str_sub(c(names(table(dt1$ba001))),3),sep = " ",pic1,"%")
+pie(table(dt1$ba001),labels = lab1, col = rainbow(12),main = "属相饼图")
+
+ggplot(dt1, aes(x=factor(1),fill = ba001))+geom_bar()+coord_polar(theta = "y")
+
+
+pic2 <- round(table(dt1$bb006)/sum(table(dt1$bb006))*100)
+lab2 <- paste(str_sub(c(names(table(dt1$bb006))),3),sep = " ",pic1,"%")
+pie(table(dt1$bb006),labels = lab2, col = c("yellow", "green"),main = "居住地饼图")
+
+ggplot(dt1, aes(x=factor(1),fill = bb006))+geom_bar()+coord_polar(theta = "y")
+```
+
+### 风玫瑰图
+&emsp;&emsp;类似饼图，我们可以把堆积的分类变量条形图做极坐标变化得到风玫瑰图，下图显示的是不同属相对应的城镇与农村人口比例，可以看出，属相为虎与龙的城镇人口较多，属相为牛的农村人口较少，其他分布呈现出较为平均的现象。
+
+```{r}
+ggplot(dt1,aes(x=factor(1)))+geom_bar(aes(x=ba001,fill=bb006))+coord_polar()
+```
+
+## 定量变量
+&emsp;&emsp;对定量变量的绘图无法完全离开直方图，下面分别绘制了多种直方图
+
+
+### 频数直方图
+
+```{r}
+hist(dt1$ba002_1, col = "pink", xlim = range(dt1$ba002_1), ylim = c(0,1800), breaks = 50, xlab = "ba002_1", ylab = "count", main = "hist of born year")
+
+binsize <- diff(range(dt1$ba002_1))/50
+ggplot(dt1, aes(x=ba002_1))+geom_histogram(binwidth = binsize,fill = "pink", colour = "black")
+```
+
+&emsp;&emsp;上图分别为base函数绘制的直方图和ggplot2函数包绘制的直方图，两组图像均将年份划分为了50个分组，但是ggplot2还可以指定binwidth组距值，比hist函数更加灵活。
+
+### 重叠式直方图
+&emsp;&emsp;重叠式直方图在分类较多的情况下，非常不适宜对结果进行分析，而当分类情况较少的时候，比较美观。例如下图，当对属相进行分类时，多种分类情况与颜色重合在一起，不便于识别；而当对居住地进行分类绘图时，可以较为清晰地看出来二者的数量级差别以及分布。
+
+```{r}
+p1 <- ggplot(dt1, aes(x=ba002_1,fill = ba001))
+p2 <- ggplot(dt1, aes(x=ba002_1,fill = bb006))
+
+p1+geom_histogram(position = "identity", alpha=0.4) 
+p2+geom_histogram(position = "identity", alpha=0.4) 
+```
+
+### 分面图形
+&emsp;&emsp;在一个页面中，依据多个分类变量摆放图形。以出生年份为定量变量，属相变量为分类变量，得到未自动调整坐标刻度的图形和经过自动调整坐标刻度的图形。
+
+```{r}
+p1 <- ggplot(dt1, aes(x=ba002_1,fill = ba001))
+p1+geom_histogram(alpha=0.7, binwidth = binsize)+facet_wrap(~ba001)
+p1+geom_histogram(alpha=0.7, binwidth = binsize)+facet_wrap(~ba001,scales="free")
+```
+
+&emsp;&emsp;在一个页面中，依据多个分类变量摆放图形。下面以出生年份为定量变量，居住地变量为分类变量，得到未自动调整坐标刻度的图形。根据结果，城镇人群的年龄和农村人群的年龄分布较为不同
+```{r}
+p2 <- ggplot(dt1, aes(x=ba002_1,fill = bb006))
+p2+geom_histogram(alpha=0.7, binwidth = binsize)+facet_wrap(~bb006)
+```
+
+### 核密度图
+&emsp;&emsp;两者绘制的核密度图形状基本类似。 两者绘制的核密度图形状基本类似。两者均能反映出变量的分布情况。 ggplot2函数包绘制出的密度函数可以调节透明度，并且可以看到后面的网格线。而R语言基础绘图包输出内容更多，多了样本量和带宽两个值。
+
+```{r}
+d <- density(dt1$ba002_1)
+plot(d,main = "出生年份核密度图")
+polygon(d, col = "lightgreen", border = "black")
+
+
+ggplot(dt1, aes(x=ba002_1))+geom_density(fill = "lightgreen", alpha = 0.2)
+```
+
+&emsp;&emsp;密度函数也可以分类绘制,下图绘制的是居住地与年龄之间的密度图，二者分布大体相同，但数据的中后部分有不一样的地方。接下来一张图绘制的是属相与年之间的密度图，由于属相分类较多，所以该图像不利于分析，属于不好的可视化结果。
+```{r}
+ggplot(dt1, aes(x=ba002_1))+geom_density(aes(x=ba002_1, color=bb006),alpha=0.4)
+
+ggplot(dt1, aes(x=ba002_1))+geom_density(aes(x=ba002_1, fill=ba001),alpha=0.4)
+```
+
+&emsp;&emsp;密度函数也可以在直方图的基础之上添加,下图绘制的是年龄分布的直方图与密度图，同时绘制出正态分布密度函数与之进行对比。
+```{r}
+ggplot(dt1, aes(x=ba002_1))+geom_histogram(aes(y=..density..),binwidth = binsize,fill="pink",color="black")+stat_function(fun = dnorm, args = list(mean(dt1$ba002_1),sd(dt1$ba002_1)),size = 1)+geom_density(aes(x=ba002_1),alpha=0.4)
+```
+
+
+
+# 思考题
+***
+<font size=4 face="微软雅黑">
+
+&emsp;&emsp;当两变量为定量变量时，可用**散点图**方式展示两个变量之间的相关性；  
+&emsp;&emsp;当两变量为定性变量时，可用**堆砌柱状图或分面统计图**的方式展示总体分布和分别的分布；  
+&emsp;&emsp;当一个是定性变量，一个是定量变量时，可用**堆砌柱状图或箱线图**来展示频数分布。
